@@ -110,7 +110,7 @@ body{
 
 @media only screen and (max-width: 1000px) {
   .login {
-    width: 70%;
+    width: 100%;
     padding: 3em;
   }
 }
@@ -144,3 +144,4 @@ body{
   }
 
 }
+

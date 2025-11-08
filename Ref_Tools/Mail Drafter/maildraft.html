@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REY Text Enhancer — Free Groq Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <div class="toolbar">
+        <label for="mode-select">Mode:</label>
+        <select id="mode-select">
+            <option value="Grammar Fix (Preserve Structure)">Grammar Fix (Preserve Structure)</option>
+            <option value="Enhance Text">Enhance Text</option>
+            <option value="Polish Email">Polish Email</option>
+        </select>
+        
+        <button id="btn-run">⚡ Run</button>
+        <button id="btn-copy">Copy Output</button>
+        <button id="btn-save">Save Output</button>
+        
+        <div class="spacer"></div>
+        
+        <select id="appearance-select">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+        </select>
+    </div>
+
+    <div class="main-content">
+        <div class="panel">
+            <label>Input</label>
+            <textarea id="txt-input" wrap="soft"></textarea>
+        </div>
+        <div class="panel">
+            <label>Output</label>
+            <textarea id="txt-output" wrap="soft" readonly></textarea>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="status-label">Ready.</span>
+        <div id="loader" class="loader" hidden></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

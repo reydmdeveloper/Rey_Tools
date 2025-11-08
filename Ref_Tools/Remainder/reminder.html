@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Reminder Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .reminder-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            z-index: 10;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="time"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #message {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-height: 1.2em; /* Reserve space */
+        }
+
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
+
+        #reminder-list-container {
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: #333;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        #reminder-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #reminder-list li {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .cancel-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .cancel-btn:hover { background-color: #c0392b; }
+        
+        /* --- NEW MODAL STYLES --- */
+        #alarm-modal-backdrop {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #alarm-modal-content {
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        #alarm-modal-content h2 {
+            margin-top: 0;
+            color: #c0392b;
+        }
+
+        #alarm-modal-message {
+            font-size: 1.1rem;
+            color: #555;
+            margin: 1rem 0 0.5rem;
+        }
+        
+        #alarm-modal-project {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            display: block;
+            margin-bottom: 2rem;
+        }
+
+        #stop-alarm-btn {
+            width: 100%;
+            background-color: #e74c3c;
+            font-size: 1.2rem;
+            padding: 0.9rem;
+        }
+        #stop-alarm-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* --- END OF NEW MODAL STYLES --- */
+
+    </style>
+</head>
+<body>
+
+    <div class="reminder-container">
+        <h1>⏰ Project Reminder</h1>
+        
+        <form id="reminder-form">
+            <div class="form-group">
+                <label for="project-name">Project Name:</label>
+                <input type="text" id="project-name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reminder-time">Time:</label>
+                <input type="time" id="reminder-time" required>
+            </div>
+            
+            <button type="submit">Set Reminder</button>
+        </form>
+
+        <div id="message"></div>
+
+        <div id="reminder-list-container">
+            <h2>Active Reminders</h2>
+            <ul id="reminder-list">
+                </ul>
+        </div>
+    </div>
+
+    <audio id="alarm-sound" src="Tune/piano-loop-432112.mp3" preload="auto" loop></audio>
+
+    <div id="alarm-modal-backdrop">
+        <div id="alarm-modal-content">
+            <h2>⏰ REMINDER ⏰</h2>
+            <p id="alarm-modal-message">It's time for your project:</p>
+            <strong id="alarm-modal-project">Project Name Here</strong>
+            <button id="stop-alarm-btn">Stop Alarm</button>
+        </div>
+    </div>
+    <script>
+        // Get elements from the DOM
+        const reminderForm = document.getElementById('reminder-form');
+        const projectNameInput = document.getElementById('project-name');
+        const reminderTimeInput = document.getElementById('reminder-time');
+        const messageEl = document.getElementById('message');
+        const alarmSound = document.getElementById('alarm-sound');
+        const reminderListEl = document.getElementById('reminder-list');
+
+        // --- NEW MODAL ELEMENTS ---
+        const alarmModalBackdrop = document.getElementById('alarm-modal-backdrop');
+        const alarmModalProject = document.getElementById('alarm-modal-project');
+        const stopAlarmBtn = document.getElementById('stop-alarm-btn');
+        
+        let activeReminders = [];
+
+        // Handle form submission
+        reminderForm.addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            const projectName = projectNameInput.value;
+            const reminderTime = reminderTimeInput.value;
+
+            if (!projectName || !reminderTime) {
+                showMessage('Please fill in both fields.', 'error');
+                return;
+            }
+            // Clear message field on new submission
+            showMessage('', 'success');
+            checkNotificationPermission(projectName, reminderTime);
+        });
+
+        function checkNotificationPermission(projectName, reminderTime) {
+            if (Notification.permission === 'denied') {
+                showMessage('Notifications are disabled. Please enable them in your browser settings.', 'error');
+                setTheAlarm(projectName, reminderTime, false);
+            }
+            else if (Notification.permission === 'granted') {
+                setTheAlarm(projectName, reminderTime, true);
+            }
+            else {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        setTheAlarm(projectName, reminderTime, true);
+                    } else {
+                        showMessage('Notifications were not enabled. The alarm will still pop up.', 'error');
+                        setTheAlarm(projectName, reminderTime, false);
+                    }
+                });
+            }
+        }
+
+        function setTheAlarm(projectName, reminderTime, canShowNotification) {
+            const now = new Date();
+            const [hours, minutes] = reminderTime.split(':');
+            
+            const alarmDate = new Date();
+            alarmDate.setHours(hours);
+            alarmDate.setMinutes(minutes);
+            alarmDate.setSeconds(0);
+            alarmDate.setMilliseconds(0);
+
+            let timeToAlarm = alarmDate.getTime() - now.getTime();
+
+            if (timeToAlarm < 0) {
+                timeToAlarm += 24 * 60 * 60 * 1000; // Add 24 hours
+            }
+
+            const reminder = {
+                projectName: projectName,
+                alarmTime: new Date(now.getTime() + timeToAlarm)
+            };
+
+            const timeoutId = setTimeout(() => {
+                triggerAlarm(reminder, canShowNotification);
+            }, timeToAlarm);
+            
+            reminder.timeoutId = timeoutId;
+            activeReminders.push(reminder);
+            renderReminders();
+
+            showMessage(`Reminder set for "${projectName}" at ${reminder.alarmTime.toLocaleTimeString()}`, 'success');
+            
+            projectNameInput.value = '';
+            reminderTimeInput.value = '';
+        }
+
+        // --- MODIFIED FUNCTION ---
+        function triggerAlarm(reminder, canShowNotification) {
+            
+            // 1. Show browser notification (if enabled)
+            // Do this first, as it works in the background
+            if (canShowNotification) {
+                new Notification('Project Reminder!', {
+                    body: `Time for: ${reminder.projectName}`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/1055/1055667.png'
+                });
+            }
+
+            // 2. Play the sound (it will loop)
+            alarmSound.play().catch(e => {
+                console.error("Could not play sound:", e);
+                showMessage('Could not play alarm sound.', 'error');
+            });
+
+            // 3. Show the custom modal instead of alert()
+            alarmModalProject.textContent = reminder.projectName;
+            alarmModalBackdrop.style.display = 'flex';
+            
+            // 4. Remove the reminder from the list *after* it has fired
+            removeReminder(reminder.timeoutId, false); // false = don't clear timeout, it just fired
+        }
+        
+        // --- NEW: Event listener for the "Stop Alarm" button ---
+        stopAlarmBtn.addEventListener('click', () => {
+            // 1. Stop the sound
+            alarmSound.pause();
+            alarmSound.currentTime = 0; // Reset sound to the beginning
+
+            // 2. Hide the modal
+            alarmModalBackdrop.style.display = 'none';
+
+            // 3. Show the "end message"
+            const projectName = alarmModalProject.textContent;
+            showMessage(`Alarm for "${projectName}" stopped.`, 'success');
+        });
+
+
+        // --- List Management Functions (Unchanged) ---
+        function renderReminders() {
+            reminderListEl.innerHTML = '';
+
+            if (activeReminders.length === 0) {
+                reminderListEl.innerHTML = '<li>No active reminders.</li>';
+                return;
+            }
+            activeReminders.sort((a, b) => a.alarmTime - b.alarmTime);
+
+            for (const reminder of activeReminders) {
+                const li = document.createElement('li');
+                const timeString = reminder.alarmTime.toLocaleTimeString();
+                
+                li.innerHTML = `
+                    <span>
+                        <strong>${reminder.projectName}</strong> at ${timeString}
+                    </span>
+                    <button class="cancel-btn" onclick="removeReminder(${reminder.timeoutId})">
+                        Cancel
+                    </button>
+                `;
+                reminderListEl.appendChild(li);
+            }
+        }
+
+        window.removeReminder = function(timeoutIdToCancel, shouldClearTimeout = true) {
+            if (shouldClearTimeout) {
+                clearTimeout(timeoutIdToCancel);
+                // Find the reminder and show a cancellation message
+                const cancelledReminder = activeReminders.find(r => r.timeoutId === timeoutIdToCancel);
+                if (cancelledReminder) {
+                    showMessage(`Reminder for "${cancelledReminder.projectName}" cancelled.`, 'error');
+                }
+            }
+            activeReminders = activeReminders.filter(r => r.timeoutId !== timeoutIdToCancel);
+            renderReminders();
+        }
+
+        function showMessage(msg, type) {
+            messageEl.textContent = msg;
+            messageEl.className = type;
+        }
+
+        window.addEventListener('load', () => {
+            if (Notification.permission === 'denied') {
+                showMessage('Note: Notifications are disabled in your browser.', 'error');
+            }
+            renderReminders(); // Initial render on load
+        });
+    </script>
+
+</body>
+</html>

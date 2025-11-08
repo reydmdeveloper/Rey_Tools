@@ -1,0 +1,169 @@
+/* Basic Setup */
+:root {
+    --bg-dark-1: #242424;
+    --bg-dark-2: #2B2B2B;
+    --bg-dark-3: #3C3C3C;
+    --text-dark: #E0E0E0;
+    
+    --bg-light-1: #F5F5F5;
+    --bg-light-2: #FFFFFF;
+    --bg-light-3: #E0E0E0;
+    --text-light: #242424;
+    
+    --blue: #3A7FF0;
+    --blue-hover: #326BD6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* Theme Colors */
+body.dark-mode {
+    background-color: var(--bg-dark-1);
+    color: var(--text-dark);
+}
+body.light-mode {
+    background-color: var(--bg-light-1);
+    color: var(--text-light);
+}
+
+/* 1. Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background-color: var(--bg-dark-2);
+    border-bottom: 1px solid var(--bg-dark-3);
+}
+body.light-mode .toolbar {
+    background-color: var(--bg-light-2);
+    border-bottom: 1px solid var(--bg-light-3);
+}
+.toolbar .spacer {
+    flex-grow: 1;
+}
+
+/* Buttons and Selects */
+button, select {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: var(--bg-dark-3);
+    color: var(--text-dark);
+    border: 1px solid var(--bg-dark-3);
+}
+body.light-mode button, body.light-mode select {
+    background-color: #F0F0F0;
+    color: var(--text-light);
+    border: 1px solid var(--bg-light-3);
+}
+
+button#btn-run {
+    background-color: var(--blue);
+    color: white;
+    font-weight: 600;
+}
+button#btn-run:hover {
+    background-color: var(--blue-hover);
+}
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 2. Main Content */
+.main-content {
+    display: flex;
+    flex-grow: 1;
+    padding: 12px;
+    gap: 10px;
+    overflow: hidden;
+}
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: var(--bg-dark-2);
+    border-radius: 12px;
+    padding: 10px;
+    overflow: hidden;
+}
+body.light-mode .panel {
+    background-color: var(--bg-light-2);
+}
+.panel label {
+    font-weight: 600;
+    padding-left: 4px;
+}
+textarea {
+    flex-grow: 1;
+    width: 100%;
+    resize: none;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-family: "Segoe UI", "Menlo", "Consolas", monospace;
+    line-height: 1.5;
+    background-color: var(--bg-dark-1);
+    color: var(--text-dark);
+}
+body.light-mode textarea {
+    background-color: var(--bg-light-1);
+    color: var(--text-light);
+    border: 1px solid var(--bg-light-3);
+}
+textarea:focus {
+    outline: 2px solid var(--blue);
+}
+
+/* 3. Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-dark-2);
+    border-top: 1px solid var(--bg-dark-3);
+    font-size: 13px;
+}
+body.light-mode .status-bar {
+    background-color: var(--bg-light-2);
+    border-top: 1px solid var(--bg-light-3);
+}
+
+/* Loader Spinner */
+.loader {
+    width: 18px;
+    height: 18px;
+    border: 3px solid var(--bg-dark-3);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+body.light-mode .loader {
+    border: 3px solid var(--bg-light-3);
+    border-top-color: var(--blue);
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

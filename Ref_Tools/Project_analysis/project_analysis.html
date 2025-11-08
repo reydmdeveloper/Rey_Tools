@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Project Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-controls">
+            <div class="control-col">
+                <div class="control-group">
+                    <label for="project-name">Project Name:</label>
+                    <input type="text" id="project-name">
+                    <button id="select-project-folder-button">Select Project Folder</button>
+                </div>
+                <div class="control-group">
+                    <label for="source-language">Source Language:</label>
+                    <input type="text" id="source-language" value="English">
+                    <button id="apply-src-lang">Apply to All</button>
+                </div>
+                <div class="control-group">
+                    <label for="target-language">Target Language:</label>
+                    <input type="text" id="target-language" value="English">
+                    <button id="apply-tgt-lang">Apply to All</button>
+                </div>
+            </div>
+            
+            <div class="control-col">
+                <div class="control-group">
+                    <label for="application">Application:</label>
+                    <select id="application">
+                        <option>Word</option>
+                        <option>INDD</option>
+                        <option>Excel</option>
+                        <option>PPT</option>
+                        <option>FM</option>
+                        <option>PSD</option>
+                        <option>AI</option>
+                        <option>Other</option>
+                    </select>
+                    <button id="apply-app">Apply to All</button>
+                </div>
+                <div class="control-group">
+                    <label for="task">Task:</label>
+                    <input type="text" id="task" value="Source Creation">
+                    <button id="apply-task">Apply to All</button>
+                </div>
+                <div class="control-group">
+                    <label for="effort-estimate">Estimation Hours:</label>
+                    <input type="number" id="effort-estimate" value="1.0">
+                    <button id="reset-efforts">Reset All Efforts</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+            <button id="export-excel">Export to Excel</button>
+            <button id="export-tsv">Export to TSV</button>
+            <div class="checkbox-group">
+                <input type="checkbox" id="hide-extension" checked>
+                <label for="hide-extension">Hide .pdf extension</label>
+            </div>
+            
+            <input type="file" id="folder-upload" webkitdirectory multiple hidden accept=".pdf">
+            
+            <button id="analyze-button">Select PDF Root Folder & Analyze</button>
+        </div>
+
+        <div id="loading-spinner" class="spinner" hidden></div>
+        <div id="status-text"></div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Effort (hrs)</th>
+                    <th>Invoice Number</th>
+                    <th>Project</th>
+                    <th>File Name</th>
+                    <th>Application</th>
+                    <th>Task</th>
+                    <th>File Type</th>
+                    <th>Source Language</th>
+                    <th>Target Language</th>
+                    <th>Page Count</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+    </div>
+    <div class="summary-bar" id="summary-bar">
+        Total Files: 0 | Total Pages: 0 | Total Effort: 0 hrs
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="script.js" type="module"></script>
+
+</body>
+</html>

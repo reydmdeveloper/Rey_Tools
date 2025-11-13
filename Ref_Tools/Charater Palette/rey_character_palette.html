@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>REY — Character Palette</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans&family=Noto+Sans+Symbols+2&family=Noto+Emoji&display=swap" rel="stylesheet">
+
+<style>
+/* ------------------------------
+   GLOBAL STYLE / THEME
+--------------------------------*/
+:root {
+    --tile-size: 40px; /* smallest on load */
+    --bg: #1e1e1e;
+    --fg: #e0e0e0;
+    --tile-bg: #2e2e2e;
+    --tile-hover: #3a3a3a;
+    --border: #444;
+    --accent: #4FC3F7;
+}
+.light {
+    --bg: #f9f9f9;
+    --fg: #111;
+    --tile-bg: #fff;
+    --tile-hover: #e7e7e7;
+    --border: #ccc;
+    --accent: #0078d7;
+}
+body {
+    margin: 0;
+    font-family: "Noto Sans", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+/* ------------------------------
+   LAYOUT
+--------------------------------*/
+.header {
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+.header input {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--tile-bg);
+    color: var(--fg);
+}
+select, button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--tile-bg);
+    color: var(--fg);
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--tile-size), 1fr));
+    gap: 6px;
+    padding: 10px;
+}
+
+/* ------------------------------
+   CHARACTER TILES
+--------------------------------*/
+.tile {
+    height: var(--tile-size);
+    background: var(--tile-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--tile-size) / 2);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: 0.1s;
+}
+.tile:hover {
+    background: var(--tile-hover);
+}
+
+/* Unicode font fallback stack */
+.tile .glyph {
+    font-family:
+        "Noto Emoji",
+        "Noto Sans Symbols 2",
+        "Noto Sans",
+        "Segoe UI Symbol",
+        "Segoe UI Emoji",
+        "Arial Unicode MS",
+        sans-serif;
+    line-height: 1;
+}
+
+/* Highlight selected tile */
+.tile.selected {
+    outline: 2px solid var(--accent);
+}
+
+/* ------------------------------
+   SIDEBAR (Copy Preview)
+--------------------------------*/
+.sidebar {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--tile-bg);
+}
+.copy-box {
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 22px;
+    text-align: center;
+}
+
+/* Grid slider */
+.slider-box {
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: var(--tile-bg);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER BAR -->
+<div class="header">
+    <button id="themeBtn">Light / Dark</button>
+    <select id="categorySelect">
+        <option value="all">Display All</option>
+        <option value="recent">Recently Used ⭐</option>
+        <option value="fav">Favourites ❤️</option>
+
+        <option value="latin">Latin</option>
+        <option value="latin-ext">Latin Extended</option>
+        <option value="greek">Greek</option>
+        <option value="cyrillic">Cyrillic</option>
+        <option value="arabic">Arabic</option>
+        <option value="hebrew">Hebrew</option>
+        <option value="devanagari">Devanagari</option>
+        <option value="thai">Thai</option>
+
+        <option value="hiragana">Hiragana</option>
+        <option value="katakana">Katakana</option>
+        <option value="hangul">Hangul</option>
+        <option value="braille">Braille</option>
+
+        <option value="arrows">Arrows</option>
+        <option value="math">Math Operators</option>
+        <option value="box">Box Drawing</option>
+        <option value="block">Block Elements</option>
+        <option value="shapes">Geometric Shapes</option>
+        <option value="currency">Currency</option>
+        <option value="punct">Punctuation</option>
+
+        <option value="emoji-faces">Emoji Faces</option>
+        <option value="emoji-symbols">Emoji Symbols</option>
+        <option value="emoji-misc">Emoji Misc</option>
+        <option value="misc">Misc Symbols</option>
+    </select>
+
+    <input id="searchBox" placeholder="Search by name, code, emoji…" />
+</div>
+
+<!-- GRID -->
+<div class="grid" id="grid"></div>
+
+<!-- COPY OUTPUT -->
+<div class="sidebar">
+    <div class="copy-box" id="copyBox">Click a character…</div>
+
+    <div id="charInfo"></div>
+
+    <button onclick="addFav()">Add to Favourites</button>
+</div>
+
+<!-- GRID SIZE -->
+<div class="slider-box">
+    <label>Grid Size</label>
+    <input type="range" min="40" max="120" value="40" id="gridSlider">
+</div>
+
+<script>
+/* -----------------------------------------
+   MINIMAL UNICODE BLOCKS
+------------------------------------------*/
+const BLOCKS = {
+    "latin": [0x0020, 0x007F],
+    "latin-ext": [0x0100, 0x024F],
+    "greek": [0x0370, 0x03FF],
+    "cyrillic": [0x0400, 0x04FF],
+    "arabic": [0x0600, 0x06FF],
+    "hebrew": [0x0590, 0x05FF],
+    "devanagari": [0x0900, 0x097F],
+    "thai": [0x0E00, 0x0E7F],
+
+    "hiragana": [0x3040, 0x309F],
+    "katakana": [0x30A0, 0x30FF],
+    "hangul": [0xAC00, 0xD7A3],
+    "braille": [0x2800, 0x28FF],
+
+    "arrows": [0x2190, 0x21FF],
+    "math": [0x2200, 0x22FF],
+    "box": [0x2500, 0x257F],
+    "block": [0x2580, 0x259F],
+    "shapes": [0x25A0, 0x25FF],
+    "currency": [0x20A0, 0x20CF],
+    "punct": [0x2000, 0x206F],
+
+    "emoji-faces": [0x1F600, 0x1F64F],
+    "emoji-symbols": [0x1F300, 0x1F5FF],
+    "emoji-misc": [0x1F900, 0x1F9FF],
+    "misc": [0x2600, 0x26FF],
+};
+
+/* -----------------------------------------
+   GRID GENERATION
+------------------------------------------*/
+const grid = document.getElementById("grid");
+const copyBox = document.getElementById("copyBox");
+let selectedChar = null;
+
+function generate(block) {
+    grid.innerHTML = "";
+    let chars = [];
+
+    if (block === "all") {
+        for (let i = 32; i < 65535; i++) chars.push(i);
+    }
+    else if (block === "recent") {
+        chars = JSON.parse(localStorage.getItem("recent") || "[]");
+    }
+    else if (block === "fav") {
+        chars = JSON.parse(localStorage.getItem("fav") || "[]");
+    }
+    else {
+        let [start, end] = BLOCKS[block];
+        for (let i = start; i <= end; i++) chars.push(i);
+    }
+
+    chars.forEach(code => {
+        let div = document.createElement("div");
+        div.className = "tile";
+        div.onclick = (event) => selectChar(code, event);
+
+        let span = document.createElement("span");
+        span.className = "glyph";
+        span.textContent = String.fromCodePoint(code);
+
+        div.appendChild(span);
+        grid.appendChild(div);
+    });
+}
+
+/* -----------------------------------------
+   CHARACTER SELECTION + AUTO COPY
+------------------------------------------*/
+function selectChar(code, event) {
+    selectedChar = code;
+    const ch = String.fromCodePoint(code);
+
+    /* show character */
+    copyBox.textContent = ch;
+
+    /* highlight selected */
+    document.querySelectorAll(".tile").forEach(t => t.classList.remove("selected"));
+    event.currentTarget.classList.add("selected");
+
+    /* show details */
+    const hex = code.toString(16).toUpperCase();
+    document.getElementById("charInfo").innerHTML =
+        `<b>U+${hex}</b><br>
+         UTF-8: &#${code};<br>
+         HTML: &amp;#${code};<br>
+         CSS: \\${hex}`;
+
+    /* auto copy */
+    navigator.clipboard.writeText(ch);
+
+    /* recent */
+    addRecent(code);
+}
+
+/* -----------------------------------------
+   RECENT + FAVOURITES
+------------------------------------------*/
+function addRecent(code) {
+    let r = JSON.parse(localStorage.getItem("recent") || "[]");
+    r = r.filter(c => c !== code);
+    r.unshift(code);
+    if (r.length > 30) r.pop();
+    localStorage.setItem("recent", JSON.stringify(r));
+}
+
+function addFav() {
+    if (!selectedChar) return;
+    let f = JSON.parse(localStorage.getItem("fav") || "[]");
+    if (!f.includes(selectedChar)) f.unshift(selectedChar);
+    localStorage.setItem("fav", JSON.stringify(f));
+}
+
+/* -----------------------------------------
+   SEARCH
+------------------------------------------*/
+document.getElementById("searchBox").addEventListener("input", e => {
+    let q = e.target.value.toLowerCase();
+    if (!q) {
+        generate(document.getElementById("categorySelect").value);
+        return;
+    }
+
+    grid.innerHTML = "";
+
+    for (let code = 32; code < 65535; code++) {
+        let ch = String.fromCodePoint(code);
+        if (
+            ch.toLowerCase().includes(q) ||
+            ("u+" + code.toString(16)).includes(q) ||
+            ch === q
+        ) {
+            let div = document.createElement("div");
+            div.className = "tile";
+            div.onclick = (event) => selectChar(code, event);
+
+            let span = document.createElement("span");
+            span.className = "glyph";
+            span.textContent = ch;
+
+            div.appendChild(span);
+            grid.appendChild(div);
+        }
+    }
+});
+
+/* -----------------------------------------
+   CATEGORY CHANGE
+------------------------------------------*/
+document.getElementById("categorySelect").addEventListener("change", e => {
+    generate(e.target.value);
+});
+
+/* -----------------------------------------
+   GRID SLIDER
+------------------------------------------*/
+document.getElementById("gridSlider").addEventListener("input", e => {
+    document.documentElement.style.setProperty("--tile-size", e.target.value + "px");
+});
+
+/* -----------------------------------------
+   THEME SWITCH
+------------------------------------------*/
+document.getElementById("themeBtn").onclick = () =>
+    document.body.classList.toggle("light");
+
+/* -----------------------------------------
+   INITIAL LOAD
+------------------------------------------*/
+generate("latin");
+</script>
+
+</body>
+</html>

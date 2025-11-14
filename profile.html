@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rey User</title>
     <link rel="stylesheet" href="style_profile.css">
     <style>
@@ -14,6 +15,16 @@
 <body>
 
     <div class="container">
+        
+        <div class="theme-switcher-wrapper">
+          <label class="theme-switcher" for="theme-toggle">
+            <input type="checkbox" id="theme-toggle" />
+            <div class="slider">
+              <span class="icon-sun">☀️</span>
+              <span class="icon-moon">🌙</span>
+            </div>
+          </label>
+        </div>
         <h2>Welcome <span id="user-name">...</span>,</h2>
         <p>Your role is: <strong id="user-role">...</strong></p>
         <p>Your email is: <strong id="user-email">...</strong></p>
@@ -27,7 +38,7 @@
             <button><a href="https://script.google.com/macros/s/AKfycbxqTNUJP5P26Yda-BxJstXLotVaWhmUd3l_fnUMdBpqQ4iLkSzKh-d-u7-1_hOmeezR/exec">Expense Tracker</a></button>
         </div>
         
-        <div class="admin2-only">           
+        <div class="admin2-only">         
             <button><a href="Ref_Tools/Mail Drafter/maildraft.html">Mail drafter</a></button>
             <button><a href="Ref_Tools/Project_analysis/project_analysis.html">Project Analysis</a></button>
             <button><a href="Ref_Tools/Remainder/reminder.html">Remainder</a></button>
@@ -43,8 +54,38 @@
 
     <script type="module" src="profile.js"></script>
 
-</body> 
-
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // 1. Check for a saved theme in localStorage
+        const savedTheme = localStorage.getItem('theme');
+        
+        // 2. Apply saved theme on load
+        // If 'light' is saved, apply light-theme.
+        // If 'dark' is saved (or nothing is saved), it defaults to dark.
+        if (savedTheme === 'light') {
+          body.classList.add('light-theme');
+          themeToggle.checked = true;
+        } else {
+          body.classList.remove('light-theme'); // Default is dark
+          themeToggle.checked = false;
+        }
+        
+        // 3. Add listener for changes
+        themeToggle.addEventListener('change', () => {
+          if (themeToggle.checked) {
+            // Switch to Light Mode
+            body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+          } else {
+            // Switch to Dark Mode
+            body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+          }
+        });
+      });
+    </script>
+    </body> 
 </html>
-
-

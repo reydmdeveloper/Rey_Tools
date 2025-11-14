@@ -1,163 +1,334 @@
-/* --- CSS Variables (Theme) --- */
+/* ======================================= */
+/* === 1. THEME COLOR VARIABLES === */
+/* ======================================= */
+
+/* --- DEFAULT DARK THEME (as requested) --- */
 :root {
-  --bg-color: #f4f7f6;
-  --card-bg: #ffffff;
-  --primary-text: #2c3e50;
-  --secondary-text: #5a6a7a;
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
-  --danger-color: #dc3545;
-  --danger-hover: #c82333;
-  --logout-color: #6c757d;
-  --logout-hover: #5a6268;
-  --border-color: #eee;
-  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
-  --border-radius-lg: 12px;
-  --border-radius-sm: 8px;
+  --bg-global: #1a1a2e; /* Dark navy blue */
+  --bg-card: #2a2a4e; /* Slightly lighter card */
+  --text-title: #e9ecef; /* Light gray for titles */
+  --text-primary: #dcdde1; /* Off-white for text */
+  --text-secondary: #9a9ab0; /* Muted gray for h3 */
+  --color-border: #4a4a6e; /* Darker border */
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  
+  --color-primary: #3498db; /* Blue (looks good on dark) */
+  --color-primary-hover: #2980b9;
+  --text-on-primary: #ffffff;
+  --color-danger: #e74c3c; /* Red (looks good on dark) */
+  --color-danger-hover: #c0392b;
 }
 
-/* --- Global & Body Setup --- */
+/* --- LIGHT THEME (when .light-theme class is applied) --- */
+body.light-theme {
+  --bg-global: #f4f7f6;
+  --bg-card: #ffffff;
+  --text-title: #2c3e50;
+  --text-primary: #333;
+  --text-secondary: #7f8c8d;
+  --color-border: #ecf0f1;
+  --shadow-color: rgba(0, 0, 0, 0.07);
+
+  /* Colors below are the same, but defined for consistency */
+  --color-primary: #3498db;
+  --color-primary-hover: #2980b9;
+  --text-on-primary: #ffffff;
+  --color-danger: #e74c3c;
+  --color-danger-hover: #c0392b;
+}
+
+/* ======================================= */
+/* === 2. GLOBAL RESET & BODY STYLES === */
+/* ======================================= */
+
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box; 
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--primary-text);
-  
-  /* Modern centering */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-global); /* USE VAR */
+  color: var(--text-primary); /* USE VAR */
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
   padding: 1rem;
+  /* Add smooth transition for color changes */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* --- Profile Card Container --- */
+/* ======================================= */
+/* === 3. NEW THEME TOGGLE STYLES === */
+/* ======================================= */
+
+.theme-switcher-wrapper {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.theme-switcher {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  cursor: pointer;
+}
+
+.theme-switcher input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #555; /* Slider background in dark mode */
+  border-radius: 34px;
+  transition: background-color 0.3s ease;
+}
+
+.slider .icon-sun,
+.slider .icon-moon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  transition: opacity 0.3s ease;
+}
+
+.slider .icon-sun {
+  left: 6px;
+  opacity: 0; /* Hidden in dark mode */
+}
+
+.slider .icon-moon {
+  right: 6px;
+  opacity: 1; /* Visible in dark mode */
+}
+
+/* Slider "knob" (using a ::before pseudo-element) */
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+/* --- Light Mode Toggle --- */
+input:checked + .slider {
+  background-color: var(--color-primary); /* Blue slider in light mode */
+}
+
+input:checked + .slider .icon-sun {
+  opacity: 1; /* Sun visible */
+}
+
+input:checked + .slider .icon-moon {
+  opacity: 0; /* Moon hidden */
+}
+
+input:checked + .slider::before {
+  transform: translateX(26px); /* Move knob to the right */
+}
+
+/* ======================================= */
+/* === 4. UPDATED PROFILE CARD STYLES === */
+/* ======================================= */
+
+/* --- Main Profile Card --- */
 .container {
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--card-shadow);
-  padding: 2.5rem;
+  background-color: var(--bg-card); /* USE VAR */
+  border-radius: 12px;
+  box-shadow: 0 6px 20px var(--shadow-color); /* USE VAR */
+  padding: 2.5rem 3rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   text-align: center;
+  border: 1px solid var(--color-border); /* USE VAR */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  position: relative; /* Needed for toggle positioning */
+  padding-top: 4rem; /* Add padding to top to make space for toggle */
 }
 
 /* --- Typography --- */
 h2 {
-  font-size: 1.75rem;
+  font-size: 2.25rem;
   font-weight: 600;
+  color: var(--text-title); /* USE VAR */
   margin-bottom: 0.5rem;
+  word-wrap: break-word;
+}
+
+#user-name {
+  color: var(--color-primary); /* USE VAR */
+  font-weight: 700;
 }
 
 h3 {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 500;
-  color: var(--secondary-text);
+  color: var(--text-secondary); /* USE VAR */
+  border-bottom: 2px solid var(--color-border); /* USE VAR */
+  padding-bottom: 0.75rem;
+  margin-top: 2rem;
   margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 p {
-  color: var(--secondary-text);
-  margin-bottom: 1rem;
   font-size: 1.1rem;
+  color: var(--text-primary); /* USE VAR */
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  word-wrap: break-word;
 }
 
-/* Highlight user details */
-#user-name,
-#user-role,
-#user-email {
-  color: var(--primary-text);
+p strong {
+  color: var(--text-title); /* USE VAR (use title color for more contrast) */
   font-weight: 600;
 }
 
+/* --- Horizontal Rule --- */
 hr {
   border: 0;
   height: 1px;
-  background-color: var(--border-color);
+  background-color: var(--color-border); /* USE VAR */
   margin: 2rem 0;
 }
 
-/* --- Buttons --- */
+/* --- Button Styling --- */
 button {
-  display: block;
-  width: 100%;
-  padding: 14px 20px;
-  margin-bottom: 12px;
-  
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
-  color: #fff;
-  
-  border: none;
-  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  
-  /* Smooth transition for hover */
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.2s ease-in-out;
+  margin: 0.5rem;
+  display: inline-block;
+  text-align: center;
+  min-width: 180px; 
 }
 
-/* Remove default styling from link inside button */
 button a {
-  color: inherit;
   text-decoration: none;
-  display: block; /* Make link fill the button */
-  margin: -14px -20px; /* Fill parent button's padding */
-  padding: 14px 20px;
+  color: inherit;
+  display: block; 
 }
 
-button:hover {
-  /* Subtle lift effect */
-  transform: translateY(-2px);
+/* --- Logout Button (Destructive Action) --- */
+#btn-logout {
+  background-color: var(--color-danger); /* USE VAR */
+  color: var(--text-on-primary); /* USE VAR */
+  border: 2px solid var(--color-danger); /* USE VAR */
 }
 
-button:active {
-  transform: translateY(0);
+#btn-logout:hover {
+  background-color: var(--color-danger-hover); /* USE VAR */
+  border-color: var(--color-danger-hover); /* USE VAR */
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
-/* --- Button Specific Colors --- */
-
-/* Default button style */
+/* --- Tool Buttons (Primary Action) --- */
+.admin1-only button,
 .admin2-only button,
 .user-only button {
-  background-color: var(--primary-color);
+  background-color: var(--color-primary); /* USE VAR */
+  color: var(--text-on-primary); /* USE VAR */
+  border: 2px solid var(--color-primary); /* USE VAR */
 }
+
+.admin1-only button:hover,
 .admin2-only button:hover,
 .user-only button:hover {
-  background-color: var(--primary-hover);
-}
-
-/* Logout Button */
-#btn-logout {
-  background-color: var(--logout-color);
-  margin-top: 1rem;
-}
-#btn-logout:hover {
-  background-color: var(--logout-hover);
-}
-
-/* Danger Button */
-#btn-delete-everything {
-  background-color: var(--danger-color);
-}
-#btn-delete-everything:hover {
-  background-color: var(--danger-hover);
+  background-color: var(--color-primary-hover); /* USE VAR */
+  border-color: var(--color-primary-hover); /* USE VAR */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
 }
 
 /* --- Role-Specific Content --- */
-/* Your HTML <style> tag correctly hides these by default.
-  Your JavaScript (e.g., profile.js) will be responsible
-  for changing this to 'display: block;' based on user role.
-*/
 .admin1-only,
 .admin2-only,
 .user-only {
-  display: none;
+  display: none; 
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ======================================= */
+/* === 5. 📱 MOBILE RESPONSIVE STYLES === */
+/* ======================================= */
+
+@media (max-width: 600px) {
+
+  body {
+    padding: 0.5rem; 
+    align-items: flex-start;
+  }
+
+  .container {
+    padding: 1.5rem; 
+    padding-top: 5rem; /* Extra top padding for mobile toggle */
+    margin-top: 0.5rem;
+  }
+  
+  /* Reposition toggle for mobile */
+  .theme-switcher-wrapper {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  h2 {
+    font-size: 1.75rem; 
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    font-size: 1rem;
+  }
+
+  /* --- Mobile Button Stacking --- */
+  button,
+  #btn-logout,
+  .admin1-only button,
+  .admin2-only button,
+  .user-only button {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    min-width: auto;
+  }
+
+  .admin1-only,
+  .admin2-only,
+  .user-only {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .admin1-only button:hover,
+  .admin2-only button:hover,
+  .user-only button:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }

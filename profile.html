@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rey User</title>
+    <title>Rey User Profile</title>
     <link rel="stylesheet" href="style_profile.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         /* Hide all role-specific content by default */
         .admin1-only, .admin2-only, .user-only {
@@ -16,76 +19,66 @@
 
     <div class="container">
         
-        <div class="theme-switcher-wrapper">
-          <label class="theme-switcher" for="theme-toggle">
-            <input type="checkbox" id="theme-toggle" />
-            <div class="slider">
-              <span class="icon-sun">☀️</span>
-              <span class="icon-moon">🌙</span>
-            </div>
-          </label>
+        <div class="user-info">
+            <h2>Welcome <span id="user-name">...</span>,</h2>
+            <p>Your role is: <strong id="user-role">...</strong></p>
+            <p>Your email is: <strong id="user-email">...</strong></p>
+            <button id="btn-logout">Logout</button>
         </div>
-        <h2>Welcome <span id="user-name">...</span>,</h2>
-        <p>Your role is: <strong id="user-role">...</strong></p>
-        <p>Your email is: <strong id="user-email">...</strong></p>
-        <button id="btn-logout">Logout</button>
         
         <hr>
 
-        <h3>Your Access Tools</h3>
+        <div class="tools-section">
+            <h3>Your Access Tools</h3>
 
-        <div class="admin1-only">
-            <button><a href="https://script.google.com/macros/s/AKfycbxqTNUJP5P26Yda-BxJstXLotVaWhmUd3l_fnUMdBpqQ4iLkSzKh-d-u7-1_hOmeezR/exec">Expense Tracker</a></button>
-        </div>
-        
-        <div class="admin2-only">         
-            <button><a href="Ref_Tools/Mail Drafter/maildraft.html">Mail drafter</a></button>
-            <button><a href="Ref_Tools/Project_analysis/project_analysis.html">Project Analysis</a></button>
-            <button><a href="Ref_Tools/Remainder/reminder.html">Remainder</a></button>
-        </div>
+            <div class="admin1-only tools-grid">
+                <a href="https://script.google.com/macros/s/AKfycbxqTNUJP5P26Yda-BxJstXLotVaWhmUd3l_fnUMdBpqQ4iLkSzKh-d-u7-1_hOmeezR/exec" class="tool-card">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <h4>Expense Tracker</h4>
+                    <p>Admin Tool</p>
+                </a>
+            </div>
+            
+            <div class="admin2-only tools-grid">         
+                <a href="Ref_Tools/Mail Drafter/maildraft.html" class="tool-card">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                    <h4>Mail Drafter</h4>
+                    <p>Admin Tool</p>
+                </a>
+                <a href="Ref_Tools/Project_analysis/project_analysis.html" class="tool-card">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <h4>Project Analysis</h4>
+                    <p>Admin Tool</p>
+                </a>
+                <a href="Ref_Tools/Remainder/reminder.html" class="tool-card">
+                    <i class="fa-solid fa-bell"></i>
+                    <h4>Reminder</h4>
+                    <p>Admin Tool</p>
+                </a>
+            </div>
 
-        <div class="user-only">
-            <button><a href="https://reydmdeveloper.github.io/Rey_pdf_t0_img/">PDF TO PNG/JPG</a></button>
-            <button><a href="Ref_Tools/Unlock pdf/Unlockpdf.html">PDF Unlocker</a></button>
-            <button><a href="Ref_Tools/Charater Palette/rey_character_palette.html">Character Palette</a></button>
+            <div class="user-only tools-grid">
+                <a href="https://reydmdeveloper.github.io/Rey_pdf_t0_img/" class="tool-card">
+                    <i class="fa-solid fa-file-image"></i>
+                    <h4>PDF to Image</h4>
+                    <p>User Tool</p>
+                </a>
+                <a href="Ref_Tools/Unlock pdf/Unlockpdf.html" class="tool-card">
+                    <i class="fa-solid fa-lock-open"></i>
+                    <h4>PDF Unlocker</h4>
+                    <p>User Tool</p>
+                </a>
+                <a href="Ref_Tools/Charater Palette/rey_character_palette.html" class="tool-card">
+                    <i class="fa-solid fa-language"></i>
+                    <h4>Character Palette</h4>
+                    <p>User Tool</p>
+                </a>
+            </div>
         </div>
         
     </div>
 
     <script type="module" src="profile.js"></script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
-        
-        // 1. Check for a saved theme in localStorage
-        const savedTheme = localStorage.getItem('theme');
-        
-        // 2. Apply saved theme on load
-        // If 'light' is saved, apply light-theme.
-        // If 'dark' is saved (or nothing is saved), it defaults to dark.
-        if (savedTheme === 'light') {
-          body.classList.add('light-theme');
-          themeToggle.checked = true;
-        } else {
-          body.classList.remove('light-theme'); // Default is dark
-          themeToggle.checked = false;
-        }
-        
-        // 3. Add listener for changes
-        themeToggle.addEventListener('change', () => {
-          if (themeToggle.checked) {
-            // Switch to Light Mode
-            body.classList.add('light-theme');
-            localStorage.setItem('theme', 'light');
-          } else {
-            // Switch to Dark Mode
-            body.classList.remove('light-theme');
-            localStorage.setItem('theme', 'dark');
-          }
-        });
-      });
-    </script>
+    
     </body> 
 </html>

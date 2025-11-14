@@ -14,7 +14,7 @@ body {
   */
   background-image: 
     linear-gradient(to bottom, rgba(21, 28, 48, 0.85), #151c30 60%),
-    url('https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&q=80');
+    url('/Image/bg.jpg');
   
   background-size: cover;
   background-position: center top;

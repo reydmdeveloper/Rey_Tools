@@ -1,107 +1,814 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark"> <!-- Start in dark mode by default -->
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>PDF Project Analyzer</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div class="container">
-        <div class="top-controls">
-            <div class="control-col">
-                <div class="control-group">
-                    <label for="project-name">Project Name:</label>
-                    <input type="text" id="project-name">
-                    <button id="select-project-folder-button">Select Project Folder</button>
-                </div>
-                <div class="control-group">
-                    <label for="source-language">Source Language:</label>
-                    <input type="text" id="source-language" value="English">
-                    <button id="apply-src-lang">Apply to All</button>
-                </div>
-                <div class="control-group">
-                    <label for="target-language">Target Language:</label>
-                    <input type="text" id="target-language" value="English">
-                    <button id="apply-tgt-lang">Apply to All</button>
-                </div>
-            </div>
-            
-            <div class="control-col">
-                <div class="control-group">
-                    <label for="application">Application:</label>
-                    <select id="application">
-                        <option>Word</option>
-                        <option>INDD</option>
-                        <option>Excel</option>
-                        <option>PPT</option>
-                        <option>FM</option>
-                        <option>PSD</option>
-                        <option>AI</option>
-                        <option>Other</option>
-                    </select>
-                    <button id="apply-app">Apply to All</button>
-                </div>
-                <div class="control-group">
-                    <label for="task">Task:</label>
-                    <input type="text" id="task" value="Source Creation">
-                    <button id="apply-task">Apply to All</button>
-                </div>
-                <div class="control-group">
-                    <label for="effort-estimate">Estimation Hours:</label>
-                    <input type="number" id="effort-estimate" value="1.0">
-                    <button id="reset-efforts">Reset All Efforts</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="bottom-bar">
-            <button id="export-excel">Export to Excel</button>
-            <button id="export-tsv">Export to TSV</button>
-            <div class="checkbox-group">
-                <input type="checkbox" id="hide-extension" checked>
-                <label for="hide-extension">Hide .pdf extension</label>
-            </div>
-            
-            <input type="file" id="folder-upload" webkitdirectory multiple hidden accept=".pdf">
-            
-            <button id="analyze-button">Select PDF Root Folder & Analyze</button>
-        </div>
-
-        <div id="loading-spinner" class="spinner" hidden></div>
-        <div id="status-text"></div>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Effort (hrs)</th>
-                    <th>Invoice Number</th>
-                    <th>Project</th>
-                    <th>File Name</th>
-                    <th>Application</th>
-                    <th>Task</th>
-                    <th>File Type</th>
-                    <th>Source Language</th>
-                    <th>Target Language</th>
-                    <th>Page Count</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                </tbody>
-        </table>
-    </div>
-    <div class="summary-bar" id="summary-bar">
-        Total Files: 0 | Total Pages: 0 | Total Effort: 0 hrs
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+    <!-- 1. Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 2. pdf.js for reading PDF files in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        // Set worker path for pdf.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+    
+    <!-- 3. SheetJS (xlsx.js) for exporting to Excel format -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <script src="script.js" type="module"></script>
+    <style>
+        /* Custom styles for dark mode and table */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* --- Scrollbar Styles --- */
+        /* Light mode scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* gray-200 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* gray-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* gray-500 */
+        }
+        
+        /* Dark mode scrollbar */
+        .dark ::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* gray-600 */
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-500 */
+        }
+
+        /* --- Table Input Styles --- */
+        .table-input, .table-select {
+            background-color: #f8fafc; /* gray-50 */
+            color: #1e293b; /* gray-800 */
+            border: 1px solid #cbd5e1; /* gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.25rem 0.5rem;
+            width: 100%;
+        }
+        .table-input:focus, .table-select:focus {
+            outline: none;
+            border-color: #63b3ed; /* blue-400 */
+            box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.5);
+        }
+        
+        /* Dark mode table inputs */
+        .dark .table-input, .dark .table-select {
+            background-color: #4a5568; /* gray-600 */
+            color: #e2e8f0; /* gray-200 */
+            border: 1px solid #718096; /* gray-500 */
+        }
+
+        /* --- Custom Button Style --- */
+        .btn {
+            @apply inline-block px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-offset-white transition-all duration-150;
+        }
+        .btn-secondary {
+             @apply bg-gray-600 hover:bg-gray-700 focus:ring-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600;
+        }
+        .btn-light {
+             @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+        }
+
+
+        /* --- Toast Notification Styles --- */
+        #toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+        .toast {
+            @apply flex items-center w-full max-w-xs p-4 rounded-lg shadow-lg text-gray-600 bg-white dark:text-gray-300 dark:bg-gray-800 ring-1 ring-black ring-opacity-5;
+            animation: toast-fade-in 0.3s ease-out;
+        }
+        .toast-icon {
+            @apply inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg;
+        }
+        .toast-icon-success {
+            @apply bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200;
+        }
+        .toast-icon-warning {
+            @apply bg-yellow-100 text-yellow-500 dark:bg-yellow-800 dark:text-yellow-200;
+        }
+        .toast-icon-error {
+            @apply bg-red-100 text-red-500 dark:bg-red-800 dark:text-red-200;
+        }
+        .toast-message {
+            @apply ml-3 text-sm font-normal;
+        }
+        .toast-close {
+            @apply ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700;
+        }
+
+        @keyframes toast-fade-in {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+    <script>
+        // Apply theme on load
+        (function() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+</head>
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-200 antialiased min-h-screen transition-colors duration-200">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex-col items-center justify-center z-50 hidden">
+        <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-xl mt-4" id="loading-status">Processing PDFs...</p>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <div class="relative flex items-center justify-center mb-6">
+            <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-white">PDF Project Analyzer</h1>
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="absolute right-0 top-0 p-2 rounded-lg btn-light">
+                <!-- Moon Icon (for light mode) -->
+                <svg id="theme-icon-dark" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <!-- Sun Icon (for dark mode) -->
+                <svg id="theme-icon-light" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Top Controls Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 p-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-xl mb-6">
+            
+            <!-- Column 1 -->
+            <div class="space-y-4">
+                <div>
+                    <label for="project-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Project Name</label>
+                    <input type="text" id="project-name" class="table-input" oninput="updateProjectName()">
+                </div>
+                <div>
+                    <label for="source-language" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source Language</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="source-language" class="table-input" value="English">
+                        <button id="apply-src-lang" class="btn btn-secondary !px-3" title="Apply to All">Apply</button>
+                    </div>
+                </div>
+                <div>
+                    <label for="target-language" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Language</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="target-language" class="table-input" value="English">
+                        <button id="apply-tgt-lang" class="btn btn-secondary !px-3" title="Apply to All">Apply</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Column 2 -->
+            <div class="space-y-4">
+                <div>
+                    <label for="application" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Application</label>
+                    <div class="flex space-x-2">
+                        <select id="application" class="table-select">
+                            <option>Word</option>
+                            <option>INDD</option>
+                            <option>Excel</option>
+                            <option>PPT</option>
+                            <option>FM</option>
+                            <option>PSD</option>
+                            <option>AI</option>
+                            <option>Other</option>
+                        </select>
+                        <button id="apply-app" class="btn btn-secondary !px-3" title="Apply to All">Apply</button>
+                    </div>
+                </div>
+                 <div>
+                    <label for="task" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="task" class="table-input" value="Source Creation">
+                        <button id="apply-task" class="btn btn-secondary !px-3" title="Apply to All">Apply</button>
+                    </div>
+                </div>
+                <div>
+                    <label for="effort-estimate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estimation Hours</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="effort-estimate" class="table-input" value="1.0" step="0.1">
+                        <button id="reset-efforts" class="btn btn-secondary !px-3" title="Reset All Efforts">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3 (Main Actions) -->
+            <div class="space-y-4 md:col-span-2 lg:col-span-1">
+                <!-- Folder Picker -->
+                <label for="folder-picker" class="btn w-full text-center cursor-pointer">
+                    1. Select PDF Folder & Analyze
+                </label>
+                <input type="file" id="folder-picker" webkitdirectory directory multiple class="hidden">
+                
+                <!-- Export Buttons -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="export-excel" class="btn btn-secondary w-full">Export to Excel</button>
+                    <button id="export-tsv" class="btn btn-secondary w-full">Export to TSV</button>
+                </div>
+
+                <!-- Options -->
+                <div class="flex items-center justify-center pt-2">
+                    <input type="checkbox" id="hide-extension" class="h-4 w-4 rounded bg-gray-100 border-gray-300 text-blue-500 focus:ring-blue-600 dark:bg-gray-700 dark:border-gray-600" checked>
+                    <label for="hide-extension" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Hide .pdf extension</label>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Status Bar -->
+        <div id="status-bar" class="text-center text-gray-600 dark:text-gray-400 mb-4 font-medium">
+            Select a folder to begin analysis.
+        </div>
+
+        <!-- Table Area -->
+        <div class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-100 dark:bg-gray-700 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[100px]">Effort (hrs)</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[150px]">Invoice</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[150px]">Project</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">File Name</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[120px]">Application</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[150px]">Task</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[120px]">File Type</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[120px]">Source Lang</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[120px]">Target Lang</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[80px]">Pages</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Rows will be injected by JavaScript -->
+                    <tr>
+                        <td colspan="10" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">No data loaded</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State ---
+        let projectData = [];
+        
+        // --- DOM Element References ---
+        const folderPicker = document.getElementById('folder-picker');
+        const tableBody = document.getElementById('table-body');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingStatus = document.getElementById('loading-status');
+        const statusBar = document.getElementById('status-bar');
+
+        // Input fields
+        const projectName = document.getElementById('project-name');
+        const sourceLanguage = document.getElementById('source-language');
+        const targetLanguage = document.getElementById('target-language');
+        const application = document.getElementById('application');
+        const task = document.getElementById('task');
+        const effortEstimate = document.getElementById('effort-estimate');
+        const hideExtension = document.getElementById('hide-extension');
+        
+        // Theme elements
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const toastContainer = document.getElementById('toast-container');
+
+
+        // --- Utility Functions ---
+        
+        /**
+         * Safely converts a value to a float, rounding to 2 decimal places.
+         * Returns 0 on failure.
+         */
+        function safeFloat(value) {
+            try {
+                const num = parseFloat(value);
+                return isNaN(num) ? 0 : Math.round(num * 100) / 100;
+            } catch (e) {
+                return 0;
+            }
+        }
+        
+        /**
+         * Toggles the loading overlay.
+         */
+        function showLoading(show, message = 'Processing PDFs...') {
+            loadingStatus.textContent = message;
+            if (show) {
+                loadingOverlay.classList.remove('hidden');
+                loadingOverlay.classList.add('flex');
+            } else {
+                loadingOverlay.classList.add('hidden');
+                loadingOverlay.classList.remove('flex');
+            }
+        }
+        
+        /**
+         * Shows a toast notification.
+         * type can be 'success', 'warning', 'error', or 'info'
+         */
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            let iconHtml = '';
+            let iconClass = '';
+            
+            if (type === 'success') {
+                iconClass = 'toast-icon-success';
+                iconHtml = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+            } else if (type === 'warning') {
+                iconClass = 'toast-icon-warning';
+                iconHtml = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`;
+            } else if (type === 'error') {
+                iconClass = 'toast-icon-error';
+                iconHtml = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+            } else { // info
+                iconClass = 'toast-icon-info';
+                iconHtml = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v.01a1 1 0 102 0V7zm-1 4a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`;
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-icon ${iconClass}">
+                    ${iconHtml}
+                </div>
+                <div class="toast-message">${message}</div>
+                <button type="button" class="toast-close" aria-label="Close">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            `;
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // --- Core PDF Processing ---
+        
+        /**
+         * Event listener for the folder picker.
+         * Kicks off the analysis process.
+         */
+        async function handleFolderSelect(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
+                showToast("No files selected.", 'warning');
+                return;
+            }
+
+            // Filter for PDF files
+            const pdfFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.pdf'));
+
+            if (pdfFiles.length === 0) {
+                showToast("No PDF files found in the selected folder.", 'warning');
+                return;
+            }
+
+            showLoading(true, `Found ${pdfFiles.length} PDF(s). Starting analysis...`);
+            projectData = []; // Clear old data
+            
+            // We process files in chunks to avoid overwhelming the browser
+            const chunkSize = 10;
+            for (let i = 0; i < pdfFiles.length; i += chunkSize) {
+                const chunk = pdfFiles.slice(i, i + chunkSize);
+                showLoading(true, `Processing batch ${i / chunkSize + 1} (${i + 1}-${Math.min(i + chunkSize, pdfFiles.length)} of ${pdfFiles.length})`);
+                
+                const promises = chunk.map(file => processPdfFile(file));
+                const results = await Promise.all(promises);
+                
+                projectData.push(...results.filter(r => r !== null)); // Add valid results
+            }
+
+            showLoading(false);
+            if (projectData.length === 0) {
+                showToast("Could not process any PDF files. See console for errors.", 'error');
+            } else {
+                showToast(`Successfully analyzed ${projectData.length} PDF(s).`, 'success');
+            }
+            renderTable();
+        }
+
+        /**
+         * Processes a single PDF file to get its page count.
+         * Returns a data object or null on failure.
+         */
+        async function processPdfFile(file) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                
+                reader.onload = async (e) => {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                        const pageCount = pdfDoc.numPages;
+                        
+                        // Get defaults from global inputs
+                        const proj = projectName.value.trim() || 'Project';
+                        const srcLang = sourceLanguage.value.trim() || 'English';
+                        const tgtLang = targetLanguage.value.trim() || 'English';
+                        
+                        resolve({
+                            effort: 0,
+                            invoice: "",
+                            project: proj,
+                            file: file.name,
+                            application: application.value,
+                            task: task.value,
+                            file_type: "Informational",
+                            source_language: srcLang,
+                            language: tgtLang, // target language
+                            page_count: pageCount,
+                            // Store relative path for potential future use
+                            path: file.webkitRelativePath || file.name 
+                        });
+                        
+                    } catch (err) {
+                        console.error(`Failed to process ${file.name}:`, err);
+                        resolve(null); // Return null for failed files
+                    }
+                };
+                
+                reader.onerror = (err) => {
+                    console.error(`Failed to read ${file.name}:`, err);
+                    resolve(null);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // --- Table Rendering and Manipulation ---
+        
+        /**
+         * Main function to render the projectData array into the HTML table.
+         */
+        function renderTable() {
+            tableBody.innerHTML = ''; // Clear existing table
+
+            if (projectData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="10" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400">No data loaded</td></tr>`;
+                statusBar.textContent = "Select a folder to begin analysis.";
+                return;
+            }
+            
+            let totalPages = 0;
+            try {
+                totalPages = projectData.reduce((sum, item) => sum + (typeof item.page_count === 'number' ? item.page_count : 0), 0);
+            } catch (e) {
+                console.error("Error calculating total pages:", e);
+            }
+            
+            const estHours = safeFloat(effortEstimate.value);
+            let totalEffort = 0;
+
+            projectData.forEach((item, index) => {
+                // Auto-calculate effort if it's 0 or not set
+                let autoEffort = 0;
+                if (totalPages > 0 && typeof item.page_count === 'number') {
+                    try {
+                        autoEffort = safeFloat((estHours / totalPages) * item.page_count);
+                    } catch (e) { autoEffort = 0; }
+                }
+                
+                if (!item.effort || item.effort === 0) {
+                    item.effort = autoEffort;
+                }
+                
+                totalEffort += safeFloat(item.effort);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700";
+                
+                // 1. Effort
+                tr.appendChild(createCell(item.effort, index, 'effort', 'number', {step: 0.1}));
+                
+                // 2. Invoice
+                tr.appendChild(createCell(item.invoice, index, 'invoice', 'text'));
+                
+                // 3. Project
+                tr.appendChild(createCell(item.project, index, 'project', 'text'));
+
+                // 4. File Name
+                let filenameDisplay = item.file;
+                if (hideExtension.checked && filenameDisplay.toLowerCase().endsWith(".pdf")) {
+                    filenameDisplay = filenameDisplay.slice(0, -4);
+                }
+                tr.appendChild(createCell(filenameDisplay, index, 'file', 'text', {}, true)); // Read-only
+
+                // 5. Application
+                const appOptions = ["Word", "INDD", "Excel", "PPT", "FM", "PSD", "AI", "Other"];
+                tr.appendChild(createCell(item.application, index, 'application', 'select', {options: appOptions}));
+
+                // 6. Task
+                tr.appendChild(createCell(item.task, index, 'task', 'text'));
+                
+                // 7. File Type
+                const typeOptions = ["Informational", "Official", "NA"];
+                tr.appendChild(createCell(item.file_type, index, 'file_type', 'select', {options: typeOptions}));
+                
+                // 8. Source Language
+                tr.appendChild(createCell(item.source_language, index, 'source_language', 'text'));
+                
+                // 9. Target Language
+                tr.appendChild(createCell(item.language, index, 'language', 'text'));
+                
+                // 10. Page Count
+                tr.appendChild(createCell(item.page_count, index, 'page_count', 'text', {}, true)); // Read-only
+
+                tableBody.appendChild(tr);
+            });
+            
+            // Update status bar
+            statusBar.textContent = `Total Files: ${projectData.length} | Total Pages: ${totalPages} | Total Effort: ${safeFloat(totalEffort)} hrs`;
+        }
+        
+        /**
+         * Helper to create a <td> with an appropriate input element.
+         */
+        function createCell(value, index, field, type, options = {}, readOnly = false) {
+            const td = document.createElement('td');
+            td.className = 'px-3 py-1.5 whitespace-nowrap text-sm';
+            
+            if (readOnly) {
+                td.textContent = value;
+                td.classList.add('text-gray-500', 'dark:text-gray-400');
+                return td;
+            }
+
+            let element;
+            if (type === 'select') {
+                element = document.createElement('select');
+                element.className = 'table-select';
+                options.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.textContent = opt;
+                    if (opt === value) {
+                        option.selected = true;
+                    }
+                    element.appendChild(option);
+                });
+            } else {
+                element = document.createElement('input');
+                element.type = type;
+                element.className = 'table-input';
+                element.value = value;
+                if (type === 'number') {
+                    element.step = options.step || '0.1';
+                }
+            }
+            
+            element.dataset.index = index;
+            element.dataset.field = field;
+            element.addEventListener('change', handleTableEdit);
+            
+            td.appendChild(element);
+            return td;
+        }
+
+        /**
+         * Event handler for when a value in the table is changed.
+         */
+        function handleTableEdit(event) {
+            const index = event.target.dataset.index;
+            const field = event.target.dataset.field;
+            let value = event.target.value;
+            
+            if (0 <= index && index < projectData.length) {
+                if (field === 'effort') {
+                    value = safeFloat(value);
+                }
+                projectData[index][field] = value;
+                
+                // Re-render if effort changed to update total
+                if (field === 'effort') {
+                    renderTable();
+                }
+            }
+        }
+        
+        /**
+         * Applies a value from a global input to all rows in projectData.
+         */
+        function applyFieldToAll(field, value) {
+            if (projectData.length === 0) return;
+            projectData.forEach(item => {
+                item[field] = value;
+            });
+            renderTable();
+        }
+
+        /**
+         * Resets all effort values based on the estimation.
+         */
+        function resetAllEfforts() {
+            if (projectData.length === 0) return;
+            
+            let totalPages = 0;
+            try {
+                totalPages = projectData.reduce((sum, item) => sum + (typeof item.page_count === 'number' ? item.page_count : 0), 0);
+            } catch (e) { console.error("Error calculating total pages:", e); }
+
+            const estHours = safeFloat(effortEstimate.value);
+
+            projectData.forEach(item => {
+                let autoEffort = 0;
+                if (totalPages > 0 && typeof item.page_count === 'number') {
+                    try {
+                        autoEffort = safeFloat((estHours / totalPages) * item.page_count);
+                    } catch (e) { autoEffort = 0; }
+                }
+                item.effort = autoEffort;
+            });
+            renderTable();
+        }
+        
+        /**
+         * Updates the project name for all items.
+         */
+        function updateProjectName() {
+            const name = projectName.value.trim();
+            if (projectData.length === 0) return;
+            applyFieldToAll('project', name || 'Project');
+        }
+
+        // --- Data Exporting ---
+
+        /**
+         * Gathers data and headers for export.
+         */
+        function getExportData() {
+            if (projectData.length === 0) {
+                showToast("No data to export. Analyze a PDF folder first.", 'warning');
+                return null;
+            }
+            
+            const headers = [
+                "Effort", "Invoice", "Project", "File Name", "Application",
+                "Task", "File Type", "Source Language", "Target Language", "Page Count"
+            ];
+            
+            const data = projectData.map(item => {
+                let filename = item.file;
+                if (hideExtension.checked && filename.toLowerCase().endsWith(".pdf")) {
+                    filename = filename.slice(0, -4);
+                }
+                return [
+                    item.effort || 0,
+                    item.invoice || "",
+                    item.project || "",
+                    filename,
+                    item.application || "",
+                    item.task || "",
+                    item.file_type || "",
+                    item.source_language || "",
+                    item.language || "",
+                    item.page_count || ""
+                ];
+            });
+            
+            return { headers, data };
+        }
+
+        /**
+         * Triggers a download of a file generated in the browser.
+         */
+        function triggerDownload(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Exports data to an Excel (.xlsx) file.
+         */
+        function exportToExcel() {
+            const exportData = getExportData();
+            if (!exportData) return;
+            
+            const { headers, data } = exportData;
+            
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Project Data");
+            
+            const fileName = `${(projectName.value.trim() || 'Project')}_PAR.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showToast("Exported to " + fileName, 'success');
+        }
+        
+        /**
+         * Exports data to a Tab-Separated Values (.tsv) file.
+         */
+        function exportToTsv() {
+            const exportData = getExportData();
+            if (!exportData) return;
+            
+            const { headers, data } = exportData;
+            
+            const tsvContent = [
+                headers.join('\t'),
+                ...data.map(row => row.join('\t'))
+            ].join('\n');
+            
+            const fileName = `${(projectName.value.trim() || 'Project')}_PAR.tsv`;
+            triggerDownload(tsvContent, fileName, 'text/tab-separated-values;charset=utf-8;');
+            
+            showToast("Exported to " + fileName, 'success');
+        }
+        
+        // --- Theme Toggling ---
+        function updateThemeIcon(isDarkMode) {
+            if (isDarkMode) {
+                themeIconDark.classList.add('hidden');
+                themeIconLight.classList.remove('hidden');
+            } else {
+                themeIconDark.classList.remove('hidden');
+                themeIconLight.classList.add('hidden');
+            }
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDarkMode = document.documentElement.classList.toggle('dark');
+            localStorage.theme = isDarkMode ? 'dark' : 'light';
+            updateThemeIcon(isDarkMode);
+        });
+
+        // --- Attach Event Listeners ---
+        
+        // Main folder selection
+        folderPicker.addEventListener('change', handleFolderSelect);
+        
+        // "Apply to All" buttons
+        document.getElementById('apply-src-lang').addEventListener('click', () => applyFieldToAll('source_language', sourceLanguage.value));
+        document.getElementById('apply-tgt-lang').addEventListener('click', () => applyFieldToAll('language', targetLanguage.value));
+        document.getElementById('apply-app').addEventListener('click', () => applyFieldToAll('application', application.value));
+        document.getElementById('apply-task').addEventListener('click', () => applyFieldToAll('task', task.value));
+        
+        // Other controls
+        document.getElementById('reset-efforts').addEventListener('click', resetAllEfforts);
+        hideExtension.addEventListener('change', renderTable);
+        
+        // Export buttons
+        document.getElementById('export-excel').addEventListener('click', exportToExcel);
+        document.getElementById('export-tsv').addEventListener('click', exportToTsv);
+        
+        // Set initial theme icon
+        updateThemeIcon(document.documentElement.classList.contains('dark'));
+
+    </script>
 
 </body>
 </html>

@@ -1,214 +1,159 @@
-/* === Global Reset & Body === */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; 
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --secondary-color: #6c757d;
+    --secondary-hover: #5a6268;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-color: #dee2e6;
+    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #dcdde1; /* Default light text color */
-  
-  /* This applies the city background image with the dark gradient overlay,
-    just like your reference image.
-  */
-  background-image: 
-    linear-gradient(to bottom, rgba(21, 28, 48, 0.85), #151c30 60%),
-    url('/Image/bg.jpg');
-  
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-attachment: fixed; /* Keeps background still on scroll */
-
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  padding: 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
 }
 
-/* === Main Profile Card === */
+/* --- Main Container --- */
 .container {
-  width: 100%;
-  max-width: 900px;
-  
-  /* This is the dark card background color */
-  background-color: rgba(26, 38, 64, 0.8); /* #1a2640 with transparency */
-  
-  /* This creates the blurred glass effect */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  /* This is the 1px border from your reference */
-  border: 1px solid #3a4a6e;
-  
-  border-radius: 12px;
-  padding: 2.5rem 3rem;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 800px;
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
-/* === User Info Section (Top) === */
-.user-info h2 {
-  font-size: 2.25rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 0.5rem;
+/* --- Typography & User Details --- */
+h2 {
+    color: var(--dark-color);
+    margin-top: 0;
 }
 
-#user-name {
-  color: #00aaff; /* Bright blue accent */
-  font-weight: 700;
+h3 {
+    color: var(--secondary-color);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+    margin-top: 1.5rem;
 }
 
-.user-info p {
-  font-size: 1.1rem;
-  color: #b0c4de; /* Muted text */
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
+p {
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 
-.user-info p strong {
-  color: #ffffff;
-  font-weight: 600;
+#user-name,
+#user-role,
+#user-email {
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
-/* --- Logout Button --- */
+hr {
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 1.5rem 0;
+}
+
+/* --- Buttons & Links --- */
+button,
+.button { /* General button styling */
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+button:hover,
+.button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Logout Button Specifics */
 #btn-logout {
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  margin-top: 1rem;
-  background-color: #e74c3c;
-  color: #ffffff;
-  border: 2px solid #e74c3c;
+    background-color: #dc3545; /* Red color for logout */
+    margin-top: 10px;
 }
 
 #btn-logout:hover {
-  background-color: #c0392b;
-  border-color: #c0392b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+    background-color: #c82333;
 }
 
-/* === Separator === */
-hr {
-  border: 0;
-  height: 1px;
-  background-color: #3a4a6e; /* Border color */
-  margin: 2.5rem 0;
+/* Tool Button Styling (Buttons containing links) */
+.admin1-only button,
+.admin2-only button,
+.user-only button {
+    background-color: var(--secondary-color);
+    width: 100%; /* Make buttons full-width within their grid cell */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
-/* === Tools Section (Bottom) === */
-.tools-section h3 {
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: #ffffff;
-  margin-bottom: 2rem;
+.admin1-only button:hover,
+.admin2-only button:hover,
+.user-only button:hover {
+    background-color: var(--secondary-hover);
 }
 
-/* --- This is the new grid container --- */
-.tools-grid {
-  /* Your JS sets this to display:block, we override it */
-  display: grid !important; 
-  
-  /* This creates a responsive grid:
-     - It fills the space with columns at least 150px wide.
-     - It creates as many columns as fit, then wraps.
-  */
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1.5rem;
+/* Styling for the links inside tool buttons */
+button a {
+    color: #ffffff;
+    text-decoration: none;
+    display: block; /* Make link fill the entire button */
+    padding: 0; /* Padding is already on the button */
 }
 
-/* --- This is the new Tool Card --- */
-.tool-card {
-  /* This is the card color from your reference */
-  background-color: #1a2640; 
-  
-  border-radius: 8px;
-  padding: 2rem 1rem;
-  text-decoration: none;
-  border: 1px solid #3a4a6e;
-  transition: all 0.3s ease;
+/* --- Tool Layout Grid --- */
+.admin1-only,
+.admin2-only,
+.user-only {
+    /* CSS Grid will be used for layout */
+    display: none; /* Keep this rule; JS will override it */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 1rem;
 }
 
-.tool-card:hover {
-  background-color: #2a3858; /* Hover color */
-  border-color: #00aaff;
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 170, 255, 0.1);
-}
-
-/* --- Tool Card Icon --- */
-.tool-card i {
-  font-size: 2.5rem;
-  color: #00aaff; /* Bright blue icon */
-  margin-bottom: 1.25rem;
-  display: block;
-}
-
-/* --- Tool Card Title --- */
-.tool-card h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 0.25rem;
-}
-
-/* --- Tool Card Subtitle --- */
-.tool-card p {
-  font-size: 0.85rem;
-  color: #b0c4de; /* Muted text */
-  margin: 0;
-}
-
-
-/* ================================== */
-/* === 📱 MOBILE RESPONSIVE STYLES === */
-/* ================================== */
-
+/* --- Mobile Responsiveness --- */
 @media (max-width: 600px) {
-  body {
-    padding: 1rem;
-  }
+    body {
+        padding: 10px;
+    }
 
-  .container {
-    padding: 2rem 1.5rem;
-  }
+    .container {
+        padding: 1.5rem;
+    }
 
-  .user-info h2 {
-    font-size: 1.75rem;
-  }
+    h2 {
+        font-size: 1.5rem;
+    }
 
-  .user-info p {
-    font-size: 1rem;
-  }
+    p {
+        font-size: 1rem;
+    }
 
-  .tools-section h3 {
-    font-size: 1.5rem;
-  }
-
-  /* Make the grid have 2 columns on most phones */
-  .tools-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-  }
-
-  .tool-card {
-    padding: 1.5rem 0.75rem;
-  }
-
-  .tool-card i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .tool-card h4 {
-    font-size: 0.9rem;
-  }
+    /* Stack buttons on small screens */
+    .admin1-only,
+    .admin2-only,
+    .user-only {
+        grid-template-columns: 1fr; /* Single column */
+    }
 }

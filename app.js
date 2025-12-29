@@ -9,10 +9,11 @@ import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.
 const firebaseConfig = {
   apiKey: "AIzaSyDRJfTsMnF7gaPxSafDJTteyCv6OpfJPDQ",
   authDomain: "rey-user.firebaseapp.com",
+  databaseURL: "https://rey-user-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "rey-user",
   storageBucket: "rey-user.firebasestorage.app",
   messagingSenderId: "533121443541",
-  appId: "1:533121443541:web:29b493b6d953f2ee66e45c"
+  appId: "1:533121443541:web:838b65175015500966e45c"
 };
 // ===================================================================
 
@@ -40,4 +41,5 @@ btnLogin.addEventListener("click", () => {
             console.error("Login FAILED:", error.message); // <-- ADD THIS
             alert("Login failed: " + error.message);
         });
+
 });

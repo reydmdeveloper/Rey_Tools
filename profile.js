@@ -7,13 +7,13 @@ import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.
 // Your Firebase configuration
 // ===================================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyDRJfTsMnF7gaPxSafDJTteyCv6OpfJPDQ",
+  apiKey: "AIzaSyDRJfTsMnF7gaPxSafDJTteyCv6OpfJPDQ",
   authDomain: "rey-user.firebaseapp.com",
+  databaseURL: "https://rey-user-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "rey-user",
   storageBucket: "rey-user.firebasestorage.app",
   messagingSenderId: "533121443541",
-  appId: "1:533121443541:web:29b493b6d953f2ee66e45c"
-    // ...etc
+  appId: "1:533121443541:web:838b65175015500966e45c"
 };
 // ===================================================================
 
@@ -81,4 +81,5 @@ if (btnLogout) {
     })
 } else {
     console.log("No button found with id 'btn-logout'");
+
 }

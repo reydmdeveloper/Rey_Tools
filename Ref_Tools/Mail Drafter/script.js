@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Anyone can view your page source and steal this key.
     // Use this for personal, local-only testing.
     // For production, this call MUST be made from a secure backend server.
-    const API_KEY = "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";
+    const API_KEY = "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";
     
     const MODEL = "llama-3.1-8b-instant";
     const API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -184,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 });
+
 
 
 

@@ -67,7 +67,7 @@ body{
     color: rgb(0, 0, 0);
     font-size: x-large;
     display: flex;
-    width: 60%;
+    width: 80%;
     margin: auto;
     justify-content: center;
     align-content: center;
@@ -582,3 +582,4 @@ ul {
 .fil0 {
   fill: #fffdef;
 }
+

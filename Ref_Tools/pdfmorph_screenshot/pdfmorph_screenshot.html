@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>REY SnapOCR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --panel: #1a1a1a;
+            --accent: #007bff;
+            --text: #eee;
+            --success: #0f0;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 800px; 
+            background: var(--panel); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { margin-top: 0; color: var(--accent); letter-spacing: 1px; }
+
+        .drop-area { 
+            border: 2px dashed #444; 
+            padding: 40px; 
+            margin: 20px 0; 
+            cursor: pointer; 
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #111;
+        }
+
+        .drop-area:hover { border-color: var(--accent); background: #181818; }
+        
+        #preview { 
+            max-width: 100%; 
+            max-height: 300px; 
+            margin-top: 15px; 
+            border-radius: 4px; 
+            display: none; 
+            border: 1px solid #333;
+        }
+
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 150px; 
+            gap: 15px; 
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .lang-section input {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        select { 
+            width: 100%; 
+            height: 120px; 
+            background: #000; 
+            color: #fff; 
+            border: 1px solid #333; 
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        button { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 0 20px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+        button:disabled { background: #444; cursor: not-allowed; }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        textarea { 
+            width: 100%; 
+            height: 250px; 
+            background: #050505; 
+            color: var(--success); 
+            font-family: 'Consolas', monospace; 
+            padding: 15px; 
+            border-radius: 4px; 
+            border: 1px solid #333; 
+            box-sizing: border-box;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .status-bar { font-size: 12px; color: #888; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>REY SnapOCR</h2>
+    
+    <div class="drop-area" id="dropZone">
+        <p id="dropText">Paste Image (Ctrl+V) or Click to Upload</p>
+        <img id="preview">
+    </div>
+
+    <div class="controls">
+        <div class="lang-section">
+            <input type="text" id="langSearch" placeholder="Filter languages...">
+            <select id="langSelect" multiple></select>
+        </div>
+        <button id="runBtn" onclick="runOCR()">EXTRACT TEXT</button>
+    </div>
+
+    <div class="output-header">
+        <span>Result:</span>
+        <button onclick="copyText()" style="font-size: 12px; padding: 5px 10px; background: #333;">Copy to Clipboard</button>
+    </div>
+    <textarea id="outputText" placeholder="The extracted text will appear here..."></textarea>
+    
+    <div class="status-bar" id="status">Ready</div>
+</div>
+
+<script>
+    const LANGS = [
+        {code:'fra', name:'French'}, {code:'eng', name:'English'},
+        {code:'spa', name:'Spanish'}, {code:'deu', name:'German'},
+        {code:'ita', name:'Italian'}, {code:'por', name:'Portuguese'},
+        {code:'tam', name:'Tamil'}, {code:'hin', name:'Hindi'},
+        {code:'jpn', name:'Japanese'}, {code:'rus', name:'Russian'}
+    ];
+
+    const dropZone = document.getElementById('dropZone');
+    const preview = document.getElementById('preview');
+    const outputText = document.getElementById('outputText');
+    const status = document.getElementById('status');
+    const runBtn = document.getElementById('runBtn');
+    
+    let activeCanvas = document.createElement('canvas');
+
+    // Language Search & Load
+    function loadLangs(query = "") {
+        const sel = document.getElementById('langSelect');
+        sel.innerHTML = "";
+        LANGS.filter(l => l.name.toLowerCase().includes(query.toLowerCase())).forEach(l => {
+            let opt = document.createElement('option');
+            opt.value = l.code;
+            opt.textContent = l.name;
+            if(l.code === 'fra' || l.code === 'eng') opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+    document.getElementById('langSearch').oninput = e => loadLangs(e.target.value);
+    loadLangs();
+
+    // Image Input Handling
+    document.addEventListener('paste', e => {
+        for(const item of e.clipboardData.items) {
+            if(item.type.startsWith("image")) handleFile(item.getAsFile());
+        }
+    });
+
+    dropZone.onclick = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = e => handleFile(e.target.files[0]);
+        input.click();
+    };
+
+    function handleFile(file) {
+        if(!file) return;
+        const url = URL.createObjectURL(file);
+        preview.src = url;
+        preview.style.display = "block";
+        document.getElementById('dropText').style.display = "none";
+        
+        const img = new Image();
+        img.onload = () => {
+            activeCanvas.width = img.width;
+            activeCanvas.height = img.height;
+            activeCanvas.getContext('2d').drawImage(img, 0, 0);
+            status.innerText = `Image loaded: ${img.width}x${img.height}`;
+        };
+        img.src = url;
+    }
+
+    // OCR Logic
+    async function runOCR() {
+        if(!activeCanvas.width) return alert("Please upload or paste an image first.");
+        
+        const selectedLangs = [...document.getElementById('langSelect').selectedOptions]
+                                .map(o => o.value).join('+') || 'eng';
+        
+        runBtn.disabled = true;
+        outputText.value = "";
+        status.innerText = "Processing OCR... please wait.";
+
+        try {
+            const worker = await Tesseract.createWorker(selectedLangs, 1, {
+                logger: m => {
+                    if(m.status === 'recognizing text') {
+                        status.innerText = `Progress: ${Math.round(m.progress * 100)}%`;
+                    }
+                }
+            });
+
+            const { data: { text } } = await worker.recognize(activeCanvas);
+            outputText.value = text;
+            status.innerText = "Extraction complete.";
+            await worker.terminate();
+        } catch (err) {
+            status.innerText = "Error occurred during scan.";
+            outputText.value = "Error: " + err.message;
+        } finally {
+            runBtn.disabled = false;
+        }
+    }
+
+    function copyText() {
+        outputText.select();
+        document.execCommand('copy');
+        alert("Text copied to clipboard!");
+    }
+</script>
+
+</body>
+</html>
